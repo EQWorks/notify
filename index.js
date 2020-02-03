@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-const axios = require('axios')
+const lib = require('./lib')
 
-require('yargs')
+if (require.main === module) {
+  require('yargs')
   .usage('Usage: $0 <command> [options]')
   .command(
     'deployment <project>',
@@ -11,12 +12,12 @@ require('yargs')
       .option('success', {
         type: 'boolean',
         default: true,
-        description: 'Whether the deployment was successful',
+        description: 'Deployment was successful or not',
       })
       .option('stage', {
         type: 'string',
         default: 'dev',
-        description: 'Project stage'
+        description: 'Project stage',
       })
       .option('commit', { type: 'string' })
       .option('build_link', { type: 'string' })
@@ -25,29 +26,11 @@ require('yargs')
         { description: 'Slack Incoming Webhook, falls back to $SLACK_HOOK env variable' },
       )
     ,
-    ({ project, success, stage, commit, build_link, slack_hook }) => {
-      const color = success ? 'good' : 'danger'
-      const title = `${project} (${stage}) deployment ${success ? 'succeeded' : 'failed'}`
-      const projLink = `https://github.com/${project}${commit ? `/commit/${commit}` : ''}`
-      const footer = `<${projLink}|${project}${commit ? `#${commit}` : ''}>`
-      const payload = {
-        attachments: [{
-          mrkdwn_in: ['text'],
-          color,
-          title,
-          title_link: build_link,
-          fallback: title,
-          footer,
-          ts: Math.floor(Date.now() / 1000),
-        }],
-      }
-      const { SLACK_HOOK } = process.env
-      axios.post(SLACK_HOOK || slack_hook, payload)
-        .then(() => {
-          console.log('Deployment notification sent to Slack')
-        }).catch(e => console.error(e.response.data || e.toJSON()))
-    },
+    lib.deployment,
   )
   .demandCommand()
   .help()
   .argv
+} else {
+  module.exports = lib
+}

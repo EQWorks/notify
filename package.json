@@ -9,5 +9,8 @@
   },
   "bin": {
     "notify": "./index.js"
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0"
   }
 }
