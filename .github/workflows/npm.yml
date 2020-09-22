@@ -7,20 +7,7 @@ on:
       - '!v*-*' # skips eg: v1.2.99-beta1, v3.5.0-test, etc.
 
 jobs:
-  publish-npm:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 12
-          registry-url: https://registry.npmjs.org/
-      - run: yarn install
-      - run: yarn publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.CD_NPM_TOKEN_PUBLISH}}
-
-  publish-gpr:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -28,7 +15,27 @@ jobs:
         with:
           node-version: 12
           registry-url: https://npm.pkg.github.com/
+          scope: '@eqworks'
+          always-auth: true
       - run: yarn install
-      - run: yarn publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.CD_GITHUB_TOKEN }}
+      - run: yarn publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+          registry-url: https://registry.npmjs.org/
+          scope: '@eqworks'
+          always-auth: true
+      - run: yarn publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.CD_NPM_TOKEN_PUBLISH }}
+
+      - name: Generate tag associated release notes
+        run: npx @eqworks/release@alpha notes -v --head ${GITHUB_REF} --github
+        env:
+          GITHUB_OWNER: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
