@@ -11,6 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
       - uses: actions/setup-node@v1
         with:
           node-version: 12
@@ -20,7 +23,7 @@ jobs:
       - run: yarn install
         env:
           NODE_AUTH_TOKEN: ${{ secrets.CD_GITHUB_TOKEN }}
-      - run: yarn publish
+      - run: yarn publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -30,12 +33,13 @@ jobs:
           registry-url: https://registry.npmjs.org/
           scope: '@eqworks'
           always-auth: true
-      - run: yarn publish
+      - run: yarn publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.CD_NPM_TOKEN_PUBLISH }}
 
       - name: Generate tag associated release notes
-        run: npx @eqworks/release@alpha notes -v --head ${GITHUB_REF} --github
+        if: ${{ success() }}
+        run: npx @eqworks/release@alpha notes -v --head ${GITHUB_REF##*/} --github --skip alpha
         env:
-          GITHUB_OWNER: ${{ github.actor }}
+          GITHUB_OWNER: EQWorks
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
