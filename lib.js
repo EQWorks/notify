@@ -21,7 +21,7 @@ const send = (extra) => ({ title, link: title_link, status, slack_hook = process
   }
   return axios.post(slack_hook, { attachments: [attachment] })
     .then(() => console.log('Notification sent to Slack'))
-    .catch(e => console.error(e.response.data || e.toJSON()))
+    .catch(e => console.error((e.response || {}).data || e.toJSON()))
 }
 
 module.exports.send = send()
