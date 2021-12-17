@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 const lib = require('./lib')
 
-if (require.main === module) {
-  require('yargs')
+require('yargs')
   .usage('Usage: $0 <command> [options]')
   .command(
     'deployment <project>',
@@ -32,6 +31,3 @@ if (require.main === module) {
   .demandCommand()
   .help()
   .argv
-} else {
-  module.exports = lib
-}
